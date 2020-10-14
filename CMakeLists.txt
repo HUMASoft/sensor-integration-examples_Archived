@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 aux_source_directory(src SRC_LIST)
 #aux_source_directory(tools SRC_LIST)
+find_package(Boost COMPONENTS system thread REQUIRED)
 
 
 add_subdirectory(lib/sensor-integration)
@@ -24,5 +25,19 @@ foreach( testsourcefile ${SRC_LIST} )
     add_executable( ${testname} ${testsourcefile} )
     message ("Including executable: " ${testname})
     # Make sure YourLib is linked to each app
-    target_link_libraries( ${testname} ${SUBDIR_LINK_NAMES} )
+    target_link_libraries( ${testname} ${SUBDIR_LINK_NAMES} ${Boost_LIBRARIES})
 endforeach( testsourcefile ${APP_SOURCES} )
+
+
+##functions
+function(echo_all_cmake_variable_values)
+  message(STATUS "")
+  get_cmake_property(vs VARIABLES)
+  foreach(v ${vs})
+    message(STATUS "${v}='${${v}}'")
+  endforeach(v)
+  message(STATUS "")
+endfunction()
+
+
+echo_all_cmake_variable_values()
