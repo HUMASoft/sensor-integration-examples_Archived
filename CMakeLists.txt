@@ -7,15 +7,11 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 aux_source_directory(src SRC_LIST)
-#aux_source_directory(tools SRC_LIST)
-find_package(Boost COMPONENTS system thread REQUIRED)
 
 
 add_subdirectory(lib/sensor-integration)
-
-#find_package(libplot)
-
 INCLUDE_DIRECTORIES(${SUBDIR_INCLUDE_DIRECTORIES})
+
 
 foreach( testsourcefile ${SRC_LIST} )
     # I used a simple string replace, to cut off .cpp.
@@ -40,4 +36,4 @@ function(echo_all_cmake_variable_values)
 endfunction()
 
 
-echo_all_cmake_variable_values()
+#echo_all_cmake_variable_values()
