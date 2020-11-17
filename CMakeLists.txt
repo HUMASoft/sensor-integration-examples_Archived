@@ -3,6 +3,7 @@ project(sensor-integration-examples)
 cmake_minimum_required(VERSION 2.8)
 
 
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -13,6 +14,9 @@ add_subdirectory(lib/sensor-integration)
 INCLUDE_DIRECTORIES(${SUBDIR_INCLUDE_DIRECTORIES})
 
 
+#set(SUBDIR_LINK_NAMES ${SUBDIR_LINK_NAMES} ws2_32)
+#-L"ws2_32"
+
 foreach( testsourcefile ${SRC_LIST} )
     # I used a simple string replace, to cut off .cpp.
     string( REGEX REPLACE "[A-z]+[/]" "" testname ${testsourcefile} )
@@ -22,6 +26,9 @@ foreach( testsourcefile ${SRC_LIST} )
     message ("Including executable: " ${testname})
     # Make sure YourLib is linked to each app
     target_link_libraries( ${testname} ${SUBDIR_LINK_NAMES} ${Boost_LIBRARIES})
+
+
+
 endforeach( testsourcefile ${APP_SOURCES} )
 
 
@@ -34,6 +41,10 @@ function(echo_all_cmake_variable_values)
   endforeach(v)
   message(STATUS "")
 endfunction()
+
+
+
+
 
 
 #echo_all_cmake_variable_values()

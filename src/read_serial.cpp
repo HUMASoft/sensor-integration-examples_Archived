@@ -2,6 +2,7 @@
 #include <string>
 
 
+
 #include "SerialComm.h"
 
 
@@ -12,7 +13,7 @@ int main()
 {
 
 
-    SerialComm p1("/dev/ttyUSB0");
+    SerialComm p1("COM7");
 
 
     for (int y=0;y<=5;y++){
