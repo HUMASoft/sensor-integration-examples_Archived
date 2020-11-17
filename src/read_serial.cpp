@@ -6,11 +6,15 @@
 #include <math.h>
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
+#include "attitude_estimator.h"
+
 
 
 using namespace boost::asio;
 using namespace boost::algorithm;
 using namespace std::string_literals;
+using namespace stateestimation;
+
 
 using std::cin;
 using std::cout;
@@ -20,6 +24,9 @@ using std::cout;
 #ifdef _WIN32
 // windows uses com ports, this depends on what com port your cable is plugged in to.
 const char *PORT = "COM7";
+#else
+//default port usb
+const char *PORT = "/dev/ttyUSB0";
 #endif
 
 
@@ -34,8 +41,9 @@ int main()
 
     boost::asio::io_context io; //Active I/0 Functions
     boost::asio::serial_port port(io); //Creation of the object
-    port.open("COM7");
-
+    //port.open("COM7");
+    //Set port correctly if port open fails.
+    port.open(PORT);
     if (!port.is_open()){
         cout << "El puerto no ha podido abrirse \n";
     }else{
@@ -47,6 +55,11 @@ int main()
 
     boost::system::error_code error;
     boost::asio::streambuf buffer;
+
+    AttitudeEstimator estimator;
+
+
+
 
     //Preguntamos al usuario que quiere hacer con el sensor correctamente conectado
     int end;
@@ -659,6 +672,9 @@ int main()
                 boost::asio::read(port, boost::asio::buffer(&c,1));
                 result+=c;
             }
+
+            //estimator.update(1/f,xyz,xyz);
+            //y=estimator.eulerPitch();
 
             //Mostramos el paquete en hexadecimal
             cout << "La cadena completa es: " << hex(result) << '\n';
