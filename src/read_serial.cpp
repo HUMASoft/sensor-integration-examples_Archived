@@ -30,7 +30,6 @@ const char *PORT = "/dev/ttyUSB0";
 
 
 
-
 //Object declaration (boost library)
 boost::asio::io_context io; //Active I/0 Functions
 boost::asio::serial_port port(io); //Creation of the object
@@ -53,105 +52,115 @@ union ulf
 void WriteDataPacket (boost::system::error_code error, std::string datapacket, std::string datapacketanswer){
 
 
-
-    //We want to read a specific answer depending on the sent data packet
-
+    //Decl. of the variables
     char a;
     std::string feedbackdevice;
     int comp=0;
-    int end2=0;
     int fin=0;
+    int end2=0;
+    int fin4=0;
+    char feedback_desc;
+    char feedback_long;
+
+    //We send the specified data packet
+    boost::asio::write(
+                port,
+                boost::asio::buffer(datapacket.c_str(), datapacket.size()),
+                boost::asio::transfer_at_least(datapacket.size()),
+                error
+                );
+
+    //The methodology will be the next:
+    //   1) First, we will go through the 1st do-while loop untill we find 'ue' in our data packet. Then, varible "fin" will be set to 1.
+    //   2) After reading 'ue', two next bites in the data packet are the descriptor and the lenght. Both will be read.
+    //   3) We know the lenght of the correct answer of the device from "datapacketanswer", at his 4th bit. We will compare it with the recent lenght read.
+    //   4) If  they match, we are in the correct way. If dont, we go back to the step 1.
+    //   5) In case of matching, we will read the complete data packet answer.
+    //   6) Finally, we compare "dtaapacketanswer" with our read data packet. If they match, process has been sucesfully done. If dont, we go back to step 1.
 
     do{
 
-        //Send the data packet
-        boost::asio::write(
-                    port,
-                    boost::asio::buffer(datapacket.c_str(), datapacket.size()),
-                    boost::asio::transfer_at_least(datapacket.size()),
-                    error
-                    );
-        //Leemos el ue inicial del paquete de respuesta
         do{
+            //Reset of some variables to avoid infinite loops
+            feedbackdevice.clear();
+            comp=0;
+            fin=0;
+            end2=0;
+            fin4=0;
+
+            do{
+
             boost::asio::read(port, boost::asio::buffer(&a,1));
             switch (a) {
             case 'u':{
-
                 comp=1;
                 feedbackdevice+=a;
                 break;}
             case 'e':{
-
                 if (comp==1){
                     fin=1;
                     feedbackdevice+=a;
-
                 }else{
                     comp=0;
                     feedbackdevice+=a;
                 }
                 break;}
-
             default:{
                 feedbackdevice.clear();
                 break;}
             }
         }while (fin==0);
 
-        fin=0;
-        comp=0;
-
-        //Once we read 'ue', we can read the following bites (descriptor and lenght of the packet)
-        char feedback_desc;
-        char feedback_long;
         boost::asio::read(port, boost::asio::buffer(&feedback_desc,1));
         feedbackdevice +=feedback_desc;
         boost::asio::read(port, boost::asio::buffer(&feedback_long,1));
         feedbackdevice +=feedback_long;
 
-        //We'll read till the end of the packet now we know its lenght
+        if (int(feedback_long) != int(datapacketanswer.at(4))){
+            fin4=0;
+        }else{
+            fin4=1;
+        }
+
+        }while (fin4==0);
 
         for (int i=0; i<= ((int)feedback_long+1); i++){
             boost::asio::read(port, boost::asio::buffer(&a,1));
             feedbackdevice +=a;
         }
 
-        //Checking if the read answer is the correct one
-        //Testing
-//        cout << "We read: " << hex(feedbackdevice) << '\n';
-//        cout << "We have: " << hex(datapacketanswer) << '\n';
-
-
         if (feedbackdevice==datapacketanswer){
             end2=1;
-            //cout << "No errors. \n";
-
-
         }else{
-            //cout << "Error, go again";
             feedbackdevice.clear();
+            end2=0;
         }
-
-
     }while(end2==0);
-
-    feedbackdevice.clear();
-
 }
 
 //This func will be used to read Gyro Data from the device
-//Func is reading xx samples. The number can be changed anytime
-int muestras=1200;
+//Func is reading xx samples. The number can be changed anytime by setting a specific value to the "muestras" variable.
+int muestras=2000;
 void ReadDataPacketGyro (std::string answer, int samples){
 
+    //Decl. of the variables
     char c;
+    char descriptor;
+    char longitud;
+
+    //The methodology will be the next:
+    //   1) First, we will go through the 1st do-while loop untill we find 'ue' in our data packet. Then, varible "fin" will be set to 1.
+    //   2) After reading 'ue', two next bites in the data packet are the descriptor and the lenght. Both will be read.
+    //   3) We read the entire data packet with a for loop and its limit set by the lenght of the packet.
+    //   4) We extract gyro values (gyrx,gyry,gyrz) from the recent read data packet.
+    //   5) Repeat all steps "muestras" times.
 
     for (int h=0; h<=samples;h++){
 
+        //Reset of some variables to avoid infinite loops
         int comp=0;
         int fin=0;
 
-        //Data is read till we find the start of a new data packet, 'ue'
         do{
             boost::asio::read(port, boost::asio::buffer(&c,1));
             switch (c) {
@@ -170,42 +179,24 @@ void ReadDataPacketGyro (std::string answer, int samples){
                 break;}
 
             default:{
-                answer+=c;
-                if (comp==1){
-                }
                 break;}
-
             }
         }while(fin==0);
 
-
-        //Descriptor
-        char descriptor;
         boost::asio::read(port, boost::asio::buffer(&descriptor,1));
         answer+=descriptor;
 
-        //Length
-        char longitud;
         boost::asio::read(port, boost::asio::buffer(&longitud,1));
         answer+=longitud;
-
-        //Once we have descriptor and lenght of our packet, we know the exact moment to stop reading it
-
-        //cout << "Packet length is:  "<< (int)longitud << '\n';
 
         for (int j = 0 ; j<= ((int)longitud + 1) ; j++){
             boost::asio::read(port, boost::asio::buffer(&c,1));
             answer+=c;
         }
 
-        //Our read data packet is the next
         cout << "Data packet is: " << hex(answer) << '\n';
-        //His length is:
-        //std::string readinglength = answer.substr(3,1);
 
-        //I get gyro values from the packet
-
-        if (int(longitud) == 14){
+        if (int(longitud) == 14){ //It must be 14
             //X
             cout << hex(answer.substr(6,4)) << '\n';
 
@@ -237,7 +228,6 @@ void ReadDataPacketGyro (std::string answer, int samples){
             cout << "Gyro z:  " << f2 << "rad/s" << '\n';
             }
 
-        //Data packet reset to prepare a new reading
         answer.clear();
 
         }
@@ -245,24 +235,35 @@ void ReadDataPacketGyro (std::string answer, int samples){
 }
 
 //This func will be used to read Euler Angles from the device
-//Func is reading xx samples. The number can be changed anytime
+//Func is reading xx samples. The number can be changed anytime by setting a specific value to the "muestras" variable.
 std::tuple <double*,double*, double, double> ReadDataPacketEuler (std::string answer, int samples){
 
+    //Decl. of the variables
     char c;
+    char longitud;
+    char descriptor;
     static double rollvector[10000];
     static double pitchvector[10000];
-    //double yaw[1899];
     double rollaverage=0.0;
     double pitchaverage=0.0;
-    //double yawaverage=0.0;
+
+    //The methodology will be the next:
+    //   1) First, we will go through the 1st do-while loop untill we find 'ue' in our data packet. Then, varible "fin" will be set to 1.
+    //   2) After reading 'ue', two next bites in the data packet are the descriptor and the lenght. Both will be read.
+    //   3) We read the entire data packet with a for loop and its limit set by the lenght of the packet.
+    //   4) We extract float gyro values (gyrox,gyroy,gyroz) and float acc values(accx,accy,accz) from the recent read data packet.
+    //   5) Now, we need to converts these values to Euler Angles(Pitch,Roll). "Attitude_estimator" lib is used to perform it.
+    //   6) Once the receiving values are stable, we use the comment library to get Pitch,Roll. (If device is placed face down, values are stable since the very beginning).
+    //   7) To correct the initial offset, we will get the average value of the first 125 values. This way, if our initial offset Yaw it 2'5, a correct value to the measurings of this angle will be: measuring - 2'5.
+    //   8) Repeat all steps "muestras" times.
 
     for (int h=0; h<=samples;h++){
 
+        //Reset of the variables to avoid infinite loops.
          answer.clear();
          int comp=0;
          int fin=0;
 
-        //Data is read till we find the start of a new data packet, 'ue'
         do{
             boost::asio::read(port, boost::asio::buffer(&c,1));
             switch (c) {
@@ -287,106 +288,83 @@ std::tuple <double*,double*, double, double> ReadDataPacketEuler (std::string an
             }
         }while(fin==0);
 
-        //Descriptor
-        char descriptor;
         boost::asio::read(port, boost::asio::buffer(&descriptor,1));
         answer+=descriptor;
 
-        //Length
-        char longitud;
         boost::asio::read(port, boost::asio::buffer(&longitud,1));
         answer+=longitud;
-
-        //Once we have descriptor and lenght of our packet, we know the exact moment to stop reading it
-
-        //cout << "Packet length is:  "<< (int)longitud << '\n';
 
         for (int j = 0 ; j<= ((int)longitud + 1) ; j++){
             boost::asio::read(port, boost::asio::buffer(&c,1));
             answer+=c;
         }
 
-        //Mostramos el paquete en hexadecimal
         cout << "Data packet is: " << hex(answer) << '\n';
 
-        //}
+        ulf accx;
+        std::string str =hex(answer.substr(6,4));
+        std::stringstream ss(str);
+        ss >> std::hex >> accx.ul;
+        double f = accx.f;
+        cout << "Acc x:  " << f << "rad/s2" << '\n';
 
-        //if(int(longitud) == 28){
+        ulf accy;
+        std::string str1 =hex(answer.substr(10,4));
+        std::stringstream ss1(str1);
+        ss1 >> std::hex >> accy.ul;
+        double f1 = accy.f;
+        cout << "Acc y:  " << f1 << "rad/s2" << '\n';
 
-            ulf accx;
-            std::string str =hex(answer.substr(6,4));
-            std::stringstream ss(str);
-            ss >> std::hex >> accx.ul;
-            double f = accx.f;
-            cout << "Acc x:  " << f << "rad/s2" << '\n';
+        ulf accz;
+        std::string str2 =hex(answer.substr(14,4));
+        std::stringstream ss2(str2);
+        ss2 >> std::hex >> accz.ul;
+        double f2 = accz.f;
+        cout << "Acc z:  " << f2 << "rad/s2" << '\n';
 
-            //y
-            //cout << hex(result.substr(10,4)) << "rad/s" << '\n';
+        ulf gyrox;
+        std::string str3 =hex(answer.substr(20,4));
+        std::stringstream ss3(str3);
+        ss3 >> std::hex >> gyrox.ul;
+        double f3 = gyrox.f;
+        cout << "Gyro x:  " << f3 << "rad/s" << '\n';
 
-            ulf accy;
-            std::string str1 =hex(answer.substr(10,4));
-            std::stringstream ss1(str1);
-            ss1 >> std::hex >> accy.ul;
-            double f1 = accy.f;
-            cout << "Acc y:  " << f1 << "rad/s2" << '\n';
+        ulf gyroy;
+        std::string str4 =hex(answer.substr(24,4));
+        std::stringstream ss4(str4);
+        ss4 >> std::hex >> gyroy.ul;
+        double f4 = gyroy.f;
+        cout << "Gyro x:  " << f4 << "rad/s" << '\n';
 
-            //z
-            //cout << hex(result.substr(14,4)) << '\n';
+        ulf gyroz;
+        std::string str5 =hex(answer.substr(28,4));
+        std::stringstream ss5(str5);
+        ss5>> std::hex >> gyroz.ul;
+        double f5 = gyroz.f;
+        cout << "Gyro x:  " << f5 << "rad/s" << '\n';
 
-            ulf accz;
-            std::string str2 =hex(answer.substr(14,4));
-            std::stringstream ss2(str2);
-            ss2 >> std::hex >> accz.ul;
-            double f2 = accz.f;
-            cout << "Acc z:  " << f2 << "rad/s2" << '\n';
+        //If sensor is placed face down, we can skip the if loop.
+        if (h>=100 && h<=samples){
 
-            ulf gyrox;
-            std::string str3 =hex(answer.substr(20,4));
-            std::stringstream ss3(str3);
-            ss3 >> std::hex >> gyrox.ul;
-            double f3 = gyrox.f;
-            cout << "Gyro x:  " << f3 << "rad/s" << '\n';
+            estimator.update(0.01,f3,f4,f5,f*9.81,f1*9.81,f2*9.81,0,0,0);
+            rollvector[h-100]=estimator.eulerRoll();
+            pitchvector[h-100]=estimator.eulerPitch();
+            cout << "My attitude is (YX Euler): (" << estimator.eulerPitch() << "," << estimator.eulerRoll() << ")" << '\n';
 
-            ulf gyroy;
-            std::string str4 =hex(answer.substr(24,4));
-            std::stringstream ss4(str4);
-            ss4 >> std::hex >> gyroy.ul;
-            double f4 = gyroy.f;
-            cout << "Gyro x:  " << f4 << "rad/s" << '\n';
 
-            ulf gyroz;
-            std::string str5 =hex(answer.substr(28,4));
-            std::stringstream ss5(str5);
-            ss5>> std::hex >> gyroz.ul;
-            double f5 = gyroz.f;
-            cout << "Gyro x:  " << f5 << "rad/s" << '\n';
+            if(h>=225 && h<=350){
 
-            //We start updating our euler angles vector once data is stable. For example, we start 1s after device started reading
-            if (h>=100 && h<=samples){
+                rollaverage= rollaverage + estimator.eulerRoll();
+                pitchaverage= pitchaverage + estimator.eulerPitch();
 
-                estimator.update(0.01,f3,f4,f5,f*9.81,f1*9.81,f2*9.81,0,0,0);
-                rollvector[h-100]=estimator.eulerRoll();
-                pitchvector[h-100]=estimator.eulerPitch();
-                //yawvector[h-100]=estimator.eulerYaw();
-                cout << "My attitude is (YX Euler): (" << estimator.eulerPitch() << "," << estimator.eulerRoll() << ")" << '\n';
+                if (h==350){
 
-                //This way we can correct initial offset
-
-                if(h>=225 && h<=350){
-
-                    rollaverage= rollaverage + estimator.eulerRoll();
-                    pitchaverage= pitchaverage + estimator.eulerPitch();
-                    //absyawaverage=absyawaverage + estimator.eulerYaw();
-
-                    if (h==350){
-
-                        rollaverage = rollaverage/125;
-                        pitchaverage = pitchaverage/125;
-                        //absyawaverage = absyawaverage/125;
-                    }
+                    rollaverage = rollaverage/125;
+                    pitchaverage = pitchaverage/125;
                 }
             }
-        //}
+        }
+       //}
     }
 
     return std::make_tuple(rollvector,pitchvector, rollaverage, pitchaverage);
@@ -395,9 +373,6 @@ std::tuple <double*,double*, double, double> ReadDataPacketEuler (std::string an
 int main()
 {
 
-
-    //    boost::asio::io_context io; //Active I/0 Functions
-    //    boost::asio::serial_port port(io); //Creation of the object
     port.open(PORT);//Port needs to be opened to read/write data
 
     if (!port.is_open()){
@@ -410,9 +385,6 @@ int main()
     boost::system::error_code error;
     //boost::asio::streambuf buffer;
 
-
-    //Definition of the estimator used to calculate Euler Angles (Roll&Pitch) from gyrox,gyroy,gyroz,accx,accy,accz
-    AttitudeEstimator estimator;
     //Our device has no magnotemeter
     estimator.setMagCalib(0.0, 0.0, 0.0);
     //Setting of GyroBias
@@ -425,24 +397,11 @@ int main()
     estimator.setPIGains(2.2, 2.65, 10, 1.25);
 
 
-    int end;
-    //int muestras=1200;
-    //    int end2;
-    //    int comp;
-    //    int fin;
-
-
+    int end=0;
     double *roll;
     double *pitch;
-
-    //    double roll[1899];
-    //    double pitch[1899];
-    //    double yaw[1899];
-
-
     double absrollaverage=0.0;
     double abspitchaverage=0.0;
-    //double absyawaverage=0.0;
 
     //Declaration of the packets which will be sent to the device
     std::string idle = "\x75\x65\x01\x02\x02\x02\xe1\xc7";
@@ -462,13 +421,12 @@ int main()
     std::string reading;
 
 
-
-    //Once the device is correctly connected, it's set to IDLE mode to stop transmitting data till user requests it
-    WriteDataPacket(error,idle, respuestacorrectaidle);
-
-    //After it, user could be able to select the functionality of the sensor
-
     do{
+
+        //Once the device is correctly connected, it's set to IDLE mode to stop transmitting data till user requests it
+        WriteDataPacket(error,idle, respuestacorrectaidle);
+
+        //After it, user could be able to select the functionality of the sensor
 
         //Here we can define as much use options as we wanted
         cout << "1 - Reset device  \n";
@@ -483,13 +441,16 @@ int main()
 
         case 1:{
             WriteDataPacket(error,reset,respuestacorrectareset);
+            WriteDataPacket(error,streamoff,respuestacorrectastreamonoff);
             break;}
 
         case 2: {
             WriteDataPacket(error,imudata100,respuestacorrectaajustes);
             WriteDataPacket(error,streamon,respuestacorrectastreamonoff);
             ReadDataPacketGyro(reading,muestras);
+            cout << "Hola1 \n";
             WriteDataPacket(error,streamoff,respuestacorrectastreamonoff);
+            cout << "Hola \n";
             break;}
 
         case 3:{
@@ -499,7 +460,7 @@ int main()
             //Vectors to plot'em in Matlab
             for (int c=0;c<=muestras-100;c++){
 
-                //Jump corrections in case device is face up. Uncomment it if device is face up.
+                //Jump corrections in case device is placed face up. Uncomment it if device is placed face up.
                 //                        if (c>200 && abs(*(roll+c)-*(roll+c-1))>5){
                 //                            *(roll+c)=*(roll+c)+6;
                 //                        }
@@ -540,7 +501,7 @@ int main()
             //Vectors to plot data in Matlab
             for (int c=0;c<=muestras-100;c++){
 
-                //Jump corrections in case device is face up. Uncomment it if device is face up.
+                //Jump corrections in case device is placed face up. Uncomment it if device is placed face up.
                 //                        if (c>200 && abs(*(roll+c)-*(roll+c-1))>5){
                 //                            *(roll+c)=*(roll+c)+6;
                 //                        }
@@ -577,6 +538,7 @@ int main()
             cout << "The required use option is not defined.";
             break;}
         }
+        cout << "Hola \n";
 
         cout << "New scan? Insert ----> y/n      \n";
         char answer1;
@@ -591,5 +553,6 @@ int main()
 
     return 0;
 }
+
 
 
