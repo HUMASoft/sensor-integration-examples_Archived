@@ -11,6 +11,9 @@
 #include <SerialComm.h>
 #include <tuple>
 
+//#include <yarp/os/RFModule.h>
+
+
 using namespace boost::asio;
 using namespace boost::algorithm;
 using namespace std::string_literals;
@@ -372,6 +375,11 @@ std::tuple <double*,double*, double, double> ReadDataPacketEuler (std::string an
 
 int main()
 {
+
+    string a_1;
+    SerialComm puertoserie("COM1");
+
+    puertoserie.ReadLine(a_1);
 
     port.open(PORT);//Port needs to be opened to read/write data
 

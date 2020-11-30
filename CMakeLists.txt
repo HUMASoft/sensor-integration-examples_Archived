@@ -14,6 +14,12 @@ add_subdirectory(lib/sensor-integration)
 INCLUDE_DIRECTORIES(${SUBDIR_INCLUDE_DIRECTORIES})
 
 
+find_package(YARP 3.2 REQUIRED COMPONENTS OS)
+
+
+
+
+
 #set(SUBDIR_LINK_NAMES ${SUBDIR_LINK_NAMES} ws2_32)
 #-L"ws2_32"
 
