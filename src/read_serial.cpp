@@ -14,6 +14,9 @@
 
 
 
+//#include <yarp/os/RFModule.h>
+
+
 using namespace boost::asio;
 using namespace boost::algorithm;
 using namespace std::string_literals;
@@ -114,7 +117,6 @@ void PlotGyro(double* gyrosx,double* gyrosy, double* gyrosz, int numero){
 
 
 }
-
 
 
 int main()

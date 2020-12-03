@@ -18,8 +18,15 @@ add_subdirectory(lib/sensor-integration)
 INCLUDE_DIRECTORIES(${SUBDIR_INCLUDE_DIRECTORIES})
 
 
-#set(SUBDIR_LINK_NAMES ${SUBDIR_LINK_NAMES} yarp)
-#-L"ws2_32"
+
+
+
+
+
+
+#set(SUBDIR_LINK_NAMES ${SUBDIR_LINK_NAMES} ws2_32)
+
+
 
 foreach( testsourcefile ${SRC_LIST} )
     # I used a simple string replace, to cut off .cpp.
