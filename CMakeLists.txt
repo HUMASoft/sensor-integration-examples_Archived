@@ -1,6 +1,6 @@
 project(sensor-integration-examples)
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.12)
 
 
 
@@ -10,11 +10,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 aux_source_directory(src SRC_LIST)
 
 
+find_package(YARP REQUIRED) #Yarp libraries included
+
+
+
 add_subdirectory(lib/sensor-integration)
 INCLUDE_DIRECTORIES(${SUBDIR_INCLUDE_DIRECTORIES})
 
 
-#set(SUBDIR_LINK_NAMES ${SUBDIR_LINK_NAMES} ws2_32)
+#set(SUBDIR_LINK_NAMES ${SUBDIR_LINK_NAMES} yarp)
 #-L"ws2_32"
 
 foreach( testsourcefile ${SRC_LIST} )
@@ -26,6 +30,7 @@ foreach( testsourcefile ${SRC_LIST} )
     message ("Including executable: " ${testname})
     # Make sure YourLib is linked to each app
     target_link_libraries( ${testname} ${SUBDIR_LINK_NAMES} ${Boost_LIBRARIES})
+    target_link_libraries(${testname} ${YARP_LIBRARIES}) #Yarp libraries included
 
 
 
