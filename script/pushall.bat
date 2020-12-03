@@ -6,6 +6,5 @@ git commit -a
 #m "$1" 
 
 git push --recurse-submodules=on-demand
-#git submodule foreach 'git push' && \
+git submodule foreach 'git push' && \
 #c
-
