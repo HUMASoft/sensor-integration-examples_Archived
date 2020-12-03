@@ -6,9 +6,9 @@
 #include <string.h>
 #include <math.h>
 #include <sstream>
-#include <boost/algorithm/hex.hpp>
-#include "attitude_estimator.h"
-#include <SerialComm.h>
+
+#include "imu3dmgx510.h"
+
 #include <tuple>
 //#include <yarp/os/Bottle.h>
 
@@ -123,7 +123,8 @@ int main()
 {
 
 
-    LordIMU3DMGX10 misensor ("COM7");
+//    IMU3DMGX510 misensor ("COM7");
+    IMU3DMGX510 misensor("/dev/ttyUSB0");
 
 
     int end=0;
