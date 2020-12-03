@@ -7,4 +7,3 @@ git commit -a
 
 git push --recurse-submodules=on-demand
 git submodule foreach 'git push' && \
-
