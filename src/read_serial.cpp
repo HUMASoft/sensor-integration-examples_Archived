@@ -1,12 +1,15 @@
 //Used libs in the project
+
+#include <iostream>
+
 #include <boost/asio.hpp> // include boost
 #include <boost/asio/serial_port.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <iostream>
+
 #include <string.h>
 #include <math.h>
 #include <sstream>
-
+#include <boost/algorithm/hex.hpp>
 #include "imu3dmgx510.h"
 
 #include <tuple>
@@ -16,7 +19,7 @@
 
 //#include <yarp/os/RFModule.h>
 
-
+//using namespace std;
 using namespace boost::asio;
 using namespace boost::algorithm;
 using namespace std::string_literals;
@@ -34,7 +37,7 @@ const char *PORT = "COM7";
 const char *PORT = "/dev/ttyUSB0";
 #endif
 
-//Plotting functions are only used to copy-paste vector in Matlab (Should we rest initial offset or not?)
+//Plotting functions are only used to copy-paste vector in Matlab (Should we rest initial offset or not when device is face down?)
 
 void PlotEulerAngles(double* rollangle,double* pitchangle, double rollaverage, double pitchaverage, int numero){
 
@@ -138,7 +141,7 @@ int main()
     float gyroxvalue;
     float gyroyvalue;
     float gyrozvalue;
-    double rollvalue, pitchvalue;
+    double *estimator;
 
 
     do{
@@ -209,16 +212,17 @@ int main()
 
         case 5:{
             misensor.set_devicetogetgyroacc(100);
-            std::tie (rollvalue, pitchvalue) = misensor.get_euleranglesPolling();
+            estimator = misensor.get_euleranglesPolling();
             misensor.set_streamoff();
+            cout << "(" << estimator[0] << "," << estimator[1] << ")" << endl;
             break;}
 
         default: {
-            cout << "The required use option is not defined.";
+            cout << "The required use option is not defined." << endl;
             break;}
         }
 
-        cout << "New scan? Insert ----> y/n      \n";
+        cout << "New scan? Insert ----> y/n" << endl;
         char answer1;
         cin >> answer1;
         if (answer1=='y'){
