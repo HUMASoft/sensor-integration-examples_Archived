@@ -12,6 +12,11 @@ aux_source_directory(src SRC_LIST)
 
 find_package(YARP REQUIRED) #Yarp libraries included
 
+set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "Force dynamic plugins") #r
+
+# Standard installation directories.
+include(GNUInstallDirs) #r
+
 
 
 add_subdirectory(lib/sensor-integration)
@@ -54,6 +59,10 @@ function(echo_all_cmake_variable_values)
   message(STATUS "")
 endfunction()
 
+
+
+# Create targets if specific requirements are satisfied.
+include(CMakeDependentOption)
 
 
 

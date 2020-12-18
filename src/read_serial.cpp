@@ -1,6 +1,7 @@
 //Used libs in the project
 
 #include <iostream>
+#include <ios>
 
 #include <boost/asio.hpp> // include boost
 #include <boost/asio/serial_port.hpp>
@@ -11,13 +12,11 @@
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
 #include "imu3dmgx510.h"
+#include <imudevice.h>
 
 #include <tuple>
 //#include <yarp/os/Bottle.h>
 
-
-
-//#include <yarp/os/RFModule.h>
 
 //using namespace std;
 using namespace boost::asio;
@@ -126,8 +125,11 @@ int main()
 {
 
 
+
+
 //    IMU3DMGX510 misensor ("COM7");
     IMU3DMGX510 misensor("/dev/ttyUSB0");
+
 
 
     int end=0;
@@ -157,6 +159,7 @@ int main()
         cout << "3 - Get Euler Angles 1/100Hz" << endl;
         cout << "4 - Gyro Polling" << endl;
         cout << "5 - Euler Angles Polling" << endl;
+
 
 
         int numero;
