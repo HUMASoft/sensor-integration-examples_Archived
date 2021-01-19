@@ -12,7 +12,7 @@
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
 #include "imu3dmgx510.h"
-#include <imudevice.h>
+
 
 #include <tuple>
 //#include <yarp/os/Bottle.h>
@@ -181,10 +181,10 @@ int main()
             cout << "Samples?" << endl;
             cin >> numeromuestras;
 
-
-            misensor.set_devicetogetgyro(frecuenciagyro);
+            misensor.set_freq(frecuenciagyro);
+            misensor.set_devicetogetgyro();
             misensor.set_streamon();
-            std::tie(gyrox,gyroy,gyroz) = misensor.get_gyroContinuousStream(numeromuestras);
+            std::tie(gyrox,gyroy,gyroz) = misensor.get_gyroStreaming(numeromuestras);
             PlotGyro(gyrox,gyroy,gyroz,numeromuestras);
             misensor.set_streamoff();
             break;}
@@ -197,10 +197,11 @@ int main()
             cin >> frecuenciaeuler;
             cout << "Samples?" << endl;
             cin >> numeromuestras;
-            misensor.set_devicetogetgyroacc(frecuenciaeuler);
-            misensor.set_streamon();
-            std::tie(roll, pitch, absrollaverage, abspitchaverage)= misensor.get_euleranglesContinuousStream(numeromuestras);
 
+            misensor.set_freq(frecuenciaeuler);
+            misensor.set_devicetogetgyroacc();
+            misensor.set_streamon();
+            std::tie(roll, pitch, absrollaverage, abspitchaverage)= misensor.get_euleranglesStreaming(numeromuestras);
             //Vectors to plot data in Matlab
             PlotEulerAngles(roll, pitch, absrollaverage, abspitchaverage,numeromuestras);
             misensor.set_streamoff();
@@ -208,13 +209,15 @@ int main()
             break;}
 
         case 4:{
-            misensor.set_devicetogetgyro(100);
+            misensor.set_freq(100);
+            misensor.set_devicetogetgyro();
             std::tie (gyroxvalue,gyroyvalue,gyrozvalue) = misensor.get_gyroPolling();
             misensor.set_streamoff();
             break;}
 
         case 5:{
-            misensor.set_devicetogetgyroacc(100);
+            misensor.set_freq(100);
+            misensor.set_devicetogetgyroacc();
             estimator = misensor.get_euleranglesPolling();
             misensor.set_streamoff();
             cout << "(" << estimator[0] << "," << estimator[1] << ")" << endl;
