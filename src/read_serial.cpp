@@ -36,7 +36,7 @@ const char *PORT = "COM7";
 const char *PORT = "/dev/ttyUSB0";
 #endif
 
-//Plotting functions are only used to copy-paste vector in Matlab (Should we rest initial offset or not when device is face down?)
+//Plotting functions are only used to copy-paste vector in Matlab
 
 void PlotEulerAngles(double* rollangle,double* pitchangle, double rollaverage, double pitchaverage, int numero){
 
@@ -124,13 +124,8 @@ void PlotGyro(double* gyrosx,double* gyrosy, double* gyrosz, int numero){
 int main()
 {
 
-
-
-
 //    IMU3DMGX510 misensor ("COM7");
     IMU3DMGX510 misensor("/dev/ttyUSB0");
-
-
 
     int end=0;
     double *roll;
@@ -144,7 +139,7 @@ int main()
     float gyroyvalue;
     float gyrozvalue;
     double *estimator;
-
+    double *EulerAngles;
 
     do{
 
@@ -156,11 +151,10 @@ int main()
         //Here we can define as much using options as we wanted
         cout << "1 - Reset device" << endl;
         cout << "2 - Get gyro at 1/100/1000 Hz" << endl;
-        cout << "3 - Get Euler Angles 1/100Hz" << endl;
+        cout << "3 - Get Euler Angles 1/50/100/500/1000Hz" << endl;
         cout << "4 - Gyro Polling" << endl;
         cout << "5 - Euler Angles Polling" << endl;
-
-
+        cout << "6 - Euler Angles (InfiniteLoop)" << endl;
 
         int numero;
         cin >> numero;
@@ -185,6 +179,7 @@ int main()
             misensor.set_devicetogetgyro();
             misensor.set_streamon();
             std::tie(gyrox,gyroy,gyroz) = misensor.get_gyroStreaming(numeromuestras);
+            //Vectors to plot data in Matlab
             PlotGyro(gyrox,gyroy,gyroz,numeromuestras);
             misensor.set_streamoff();
             break;}
@@ -205,7 +200,6 @@ int main()
             //Vectors to plot data in Matlab
             PlotEulerAngles(roll, pitch, absrollaverage, abspitchaverage,numeromuestras);
             misensor.set_streamoff();
-
             break;}
 
         case 4:{
@@ -222,6 +216,21 @@ int main()
             misensor.set_streamoff();
             cout << "(" << estimator[0] << "," << estimator[1] << ")" << endl;
             break;}
+
+        case 6:
+            misensor.set_freq(100);
+            misensor.set_devicetogetgyroacc();
+            misensor.set_streamon();
+            cout << "Calibrating IMU..." << endl;
+            misensor.calibrate();
+            cout << "Calibration done" << endl;
+
+            misensor.set_freq(100);
+            misensor.set_IDLEmode();
+            misensor.set_devicetogetgyroacc();
+            misensor.set_streamon();
+            EulerAngles = misensor.EulerAngles();
+            cout << "Roll: " << EulerAngles[0] << " Pitch: " << EulerAngles[1] << endl;
 
         default: {
             cout << "The required use option is not defined." << endl;
