@@ -142,6 +142,14 @@ int main()
     double *EulerAngles;
 
     do{
+        //Calibration
+        misensor.set_IDLEmode();
+        misensor.set_freq(100);
+        misensor.set_devicetogetgyroacc();
+        misensor.set_streamon();
+        cout << "Calibrating IMU..." << endl;
+        misensor.calibrate();
+        cout << "Calibration done" << endl;
 
         //Once the device is correctly connected, it's set to IDLE mode to stop transmitting data till user requests it
         misensor.set_IDLEmode();
@@ -217,20 +225,16 @@ int main()
             cout << "(" << estimator[0] << "," << estimator[1] << ")" << endl;
             break;}
 
-        case 6:
-            misensor.set_freq(100);
-            misensor.set_devicetogetgyroacc();
-            misensor.set_streamon();
-            cout << "Calibrating IMU..." << endl;
-            misensor.calibrate();
-            cout << "Calibration done" << endl;
-
+        case 6:{
             misensor.set_freq(100);
             misensor.set_IDLEmode();
             misensor.set_devicetogetgyroacc();
             misensor.set_streamon();
-            EulerAngles = misensor.EulerAngles();
-            cout << "Roll: " << EulerAngles[0] << " Pitch: " << EulerAngles[1] << endl;
+            do{
+                EulerAngles = misensor.EulerAngles();
+                cout << "Roll: " << EulerAngles[0] << " Pitch: " << EulerAngles[1] << endl;
+            }while(true);
+            break;}
 
         default: {
             cout << "The required use option is not defined." << endl;
