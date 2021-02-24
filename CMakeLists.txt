@@ -4,18 +4,16 @@ cmake_minimum_required(VERSION 3.12)
 
 
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 aux_source_directory(src SRC_LIST)
 
 
-find_package(YARP REQUIRED) #Yarp libraries included
+#find_package(YARP REQUIRED) #Yarp libraries included
 
-set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "Force dynamic plugins") #r
+#set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "Force dynamic plugins") #r
 
-# Standard installation directories.
-include(GNUInstallDirs) #r
+## Standard installation directories.
+#include(GNUInstallDirs) #r
 
 
 
