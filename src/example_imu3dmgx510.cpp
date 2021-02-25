@@ -14,8 +14,10 @@ int main()
     vector<double> a1(2);
     double* a2 = imu.EulerAngles();
 
-    cout << a2[0] << ", " << a2[1] ;
-
+    for (int i=0; i<10; i++)
+    {
+        cout << a2[0] << ", " << a2[1] << endl;
+    }
     return 0;
 }
 
