@@ -15,6 +15,7 @@ aux_source_directory(src SRC_LIST)
 ## Standard installation directories.
 #include(GNUInstallDirs) #r
 
+add_subdirectory(lib/i-plot)
 
 
 add_subdirectory(lib/sensor-integration)
