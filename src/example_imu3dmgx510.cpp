@@ -1,6 +1,6 @@
 
 #include "imu3dmgx510.h"
-
+#include "IPlot.h"
 
 
 int main()
@@ -32,19 +32,38 @@ int main()
 //    ret.resize(expect.size());
 //    cout << ret.compare(expect) << endl;
 
-
-    IMU3DMGX510 imu("/dev/ttyUSB0",100);
+    uint freq=100;
+    IMU3DMGX510 imu("/dev/ttyUSB0",freq);
 
 //    imu.set_IDLEmode();
 //    imu.set_devicetogetgyroacc();
 //    imu.set_streamon();
 //    vector<double> a1(2);
-//    double* a2 = imu.EulerAngles();
-//    for (int i=0; i<10; i++)
-//    {
-//        cout << a2[0] << ", " << a2[1] << endl;
-//    }
+    double* a2;
+    double pitch,roll;
 
+    double dts=1.0/freq;
+    IPlot plPitch(dts);
+    IPlot plRoll(dts);
+
+
+    for (int i=0; i<600*freq; i++)
+    {
+        imu.GetPitchRoll(pitch,roll);
+//        cout << pitch << ", " << roll << endl;
+
+        plPitch.pushBack(pitch);
+        plRoll.pushBack(roll);
+
+//        a = imu.EulerAngles();
+//        a2 = imu.get_euleranglesPolling();
+//        cout << a2[0] << ", " << a2[1] << endl;
+//        cout << i << endl;
+//        usleep(1000*1000*dts);
+    }
+
+    plPitch.Plot();
+    plRoll.Plot();
     return 0;
 }
 
