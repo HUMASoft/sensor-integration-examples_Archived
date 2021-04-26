@@ -8,7 +8,7 @@ int main()
 
 
     uint freq=100;
-    IMU3DMGX510 imu("/dev/ttyUSB1",freq);
+    IMU3DMGX510 imu("/dev/ttyUSB0",freq);
 
 //    imu.set_IDLEmode();
 //    imu.set_devicetogetgyroacc();
@@ -18,8 +18,8 @@ int main()
     double pitch,roll;
 
     double dts=1.0/freq;
-    IPlot plPitch(dts);
-    IPlot plRoll(dts);
+    IPlot plPitch(dts,"plPitch");
+    IPlot plRoll(dts,"plRoll");
 
 
 
