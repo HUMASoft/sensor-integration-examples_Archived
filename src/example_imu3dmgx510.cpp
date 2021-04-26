@@ -8,7 +8,7 @@ int main()
 
 
     uint freq=100;
-    IMU3DMGX510 imu("/dev/ttyUSB1",freq);
+    IMU3DMGX510 imu("/dev/ttyUSB0",freq);
 
 //    imu.set_IDLEmode();
 //    imu.set_devicetogetgyroacc();
@@ -18,32 +18,29 @@ int main()
     double pitch,roll;
 
     double dts=1.0/freq;
-    IPlot plPitch(dts);
-    IPlot plRoll(dts);
+    IPlot plPitch(dts,"Pitch");
+    IPlot plRoll(dts,"Roll");
 
 
 
-    for (int i=0; i<6*freq; i++)
+    for (int i=0; i<5*freq; i++)
     {
         imu.GetPitchRoll(pitch,roll);
 //        cout << pitch << ", " << roll << endl;
 
         plPitch.pushBack(pitch);
         plRoll.pushBack(roll);
-
     }
 
 //    imu.set_streamon();
 //    for (int i=0; i<6*freq; i++)
 //    {
 //            angles = imu.EulerAngles();
-//            cout << angles[0] << ", " << angles[1] << endl;
+//            cout << anglres[0] << ", " << angles[1] << endl;
 //            cout << i << endl;
 //            usleep(1000*1000*dts);
 //        plPitch.pushBack(angles[0]);
 //        plRoll.pushBack(angles[1]);
-
-
 //    }
 
     plPitch.Plot();
