@@ -23,7 +23,7 @@ int main()
 
 
 
-    for (int i=0; i<6*freq; i++)
+    for (int i=0; i<10*freq; i++)
     {
         imu.GetPitchRoll(pitch,roll);
 //        cout << pitch << ", " << roll << endl;
