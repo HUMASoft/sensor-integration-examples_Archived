@@ -3,6 +3,8 @@
 
 SerialComm p1("/dev/ttyUSB0");
 string response;
+using namespace std;
+
 int main()
 {
     p1.SetBaudRate(57600);
