@@ -18,21 +18,12 @@ int main()
     double pitch,roll;
 
     double dts=1.0/freq;
-<<<<<<< HEAD
     IPlot plPitch(dts,"Pitch");
     IPlot plRoll(dts,"Roll");
 
 
 
     for (int i=0; i<5*freq; i++)
-=======
-    IPlot plPitch(dts,"plPitch");
-    IPlot plRoll(dts,"plRoll");
-
-
-
-    for (int i=0; i<10*freq; i++)
->>>>>>> 13b1d290cb52710cb78987ce316c79ca1f5b8e33
     {
         imu.GetPitchRoll(pitch,roll);
 //        cout << pitch << ", " << roll << endl;
