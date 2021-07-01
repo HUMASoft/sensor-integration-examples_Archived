@@ -1,6 +1,7 @@
 
 #include "IMURazor9DOF.h"
 #include "IPlot.h"
+#include "math.h"
 
 
 int main()
@@ -17,11 +18,12 @@ int main()
 
     imu.GetPitchRollYaw(dts, pitch, roll, yaw );
 
-    for (double t=0; t<10; t+=dts)
+    for (double t=0; t<100; t+=dts)
     {
         imu.GetPitchRollYaw(dts, pitch, roll, yaw );
-        cout << "-> pitch: " << pitch << ", roll: " << roll<< ", yaw: " << yaw<< endl;
-
+        cout << "-> pitch: " << pitch*180/M_PI << ", roll: " << roll*180/M_PI << ", yaw: " << yaw*180/M_PI << endl;
+//        cout << imu.GetLine() << endl;
+        usleep(dts*1000*1000);
 
     }
 
