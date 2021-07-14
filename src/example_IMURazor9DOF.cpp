@@ -8,7 +8,7 @@ int main()
 {
 
 
-    IMURazor9DOF imu("/dev/ttyUSB0");
+    IMURazor9DOF imu("/dev/ttyUSB1");
 
 
     double dts=0.01;
@@ -16,12 +16,12 @@ int main()
     IPlot plPitch(dts,"Pitch");
     IPlot plRoll(dts,"Roll");
 
-    imu.GetPitchRollYaw(dts, pitch, roll, yaw );
+    imu.GetYawPitchRoll(dts, yaw ,pitch, roll );
 
     for (double t=0; t<100; t+=dts)
     {
-        imu.GetPitchRollYaw(dts, pitch, roll, yaw );
-        cout << "-> pitch: " << pitch*180/M_PI << ", roll: " << roll*180/M_PI << ", yaw: " << yaw*180/M_PI << endl;
+        imu.GetYawPitchRoll(dts, yaw ,pitch, roll );
+        cout << "-> pitch: " << pitch << ", roll: " << roll << ", yaw: " << yaw << endl;
 //        cout << imu.GetLine() << endl;
         usleep(dts*1000*1000);
 
